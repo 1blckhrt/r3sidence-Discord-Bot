@@ -61,7 +61,8 @@ client.on('guildMemberRemove', member => {
             const embed4 = new EmbedBuilder()
             .setTitle('Member Left')
             .setColor("DarkButNotBlack")
-            logChannel.send(`${member.user.tag} left the server.`);
+            .setDescription(`${member.user.tag} left the server.`);
+            logChannel.send({embeds: [embed4]});
         }
       })
       .catch(console.error);
