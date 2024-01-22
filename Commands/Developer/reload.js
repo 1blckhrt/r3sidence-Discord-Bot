@@ -6,7 +6,7 @@ module.exports = {
     data: new SlashCommandBuilder()
         .setName("reload")
         .setDescription("Reloads your commands/events.")
-        .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+        .setDefaultMemberPermissions(PermissionFlagsBits.KickMembers)
         .addSubcommand((options) => options
         .setName("events")
         .setDescription("Reloads your events."))
