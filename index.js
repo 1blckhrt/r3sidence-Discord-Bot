@@ -1,12 +1,12 @@
 const { Client, GatewayIntentBits, Partials, Collection, Guild, ActivityType, EmbedBuilder, Embed} = require("discord.js");
-const { Guilds, GuildMembers, GuildMessages, MessageContent, GuildVoiceStates } = GatewayIntentBits;
+const { Guilds, GuildMembers, GuildMessages, MessageContent, GuildVoiceStates, GuildPresences } = GatewayIntentBits;
 const { User, Message, GuildMember, ThreadMember } = Partials;
 const { errorHandler } = require("./Utils/errorHandler");
 const { loadEvents } = require("./Handlers/eventHandler");
 const { loadCommands } = require("./Handlers/commandHandler");
 const {token} = require("./config.json");
 const client = new Client({
-    intents: [Guilds, GuildMembers, GuildMessages, MessageContent, GuildVoiceStates ],
+    intents: [Guilds, GuildMembers, GuildMessages, MessageContent, GuildVoiceStates, GuildPresences ],
     partials: [User, Message, GuildMember, ThreadMember],
     presence: {activities: [{name: "R3 Radio", type:ActivityType.Listening}], status: "dnd"}
 });
@@ -50,22 +50,21 @@ client.on("voiceStateUpdate", async (oldState, newState) => {
     }
 });
 
-client.on('guildMemberRemove', member => {
-    const logChannel = client.channels.cache.get('1054992523434672128');
-    member.guild.fetchAuditLogs({limit: 1})
-      .then(audit => {
-        const banLog = audit.entries.find(entry => entry.target.id === member.id && entry.action === 'MEMBER_BAN_ADD');
-        const kickLog = audit.entries.find(entry => entry.target.id === member.id && entry.action === 'MEMBER_KICK');
-  
-        if (!banLog && !kickLog) {
+client.on('guildMemberRemove', async (member) => {
+    try {
+        const logChannel = client.channels.cache.get('1054992523434672128');
+        const audit = await member.guild.fetchAuditLogs({ limit: 3 });
+        const removeLog = audit.entries.find((entry) => entry.target.id === member.id && entry.action === 'MEMBER_REMOVE');
+        if (!removeLog) {
             const embed4 = new EmbedBuilder()
-            .setTitle('Member Left')
-            .setColor("DarkButNotBlack")
-            .setDescription(`${member.user.tag} left the server.`);
-            logChannel.send({embeds: [embed4]});
+                .setTitle('Member Left')
+                .setColor("DarkButNotBlack")
+                .setDescription(`${member.user.tag} left the server.`);
+            logChannel.send({ embeds: [embed4] });
         }
-      })
-      .catch(console.error);
-  });
+    } catch (error) {
+        console.error(error);
+    }
+});
 
 client.login(client.config.token);
